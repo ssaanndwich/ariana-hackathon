@@ -8,6 +8,7 @@ import MessageBubble, { MessageType } from './MessageBubble';
 import ThinkingIndicator from './ThinkingIndicator';
 import NarratorThinkingIndicator from './NarratorThinkingIndicator';
 import useSpeechRecognition from '@/hooks/useSpeechRecognition';
+import { getGrokResponse, GrokMessage } from '@/lib/grok';
 
 interface Message {
   id: string;
@@ -103,8 +104,23 @@ const ChatInterface: React.FC = () => {
     // Simulate AI thinking
     setIsAiThinking(true);
     
-    // Simulate AI response delay
-    setTimeout(() => {
+    try {
+      // Prepare messages for Grok
+      const grokMessages: GrokMessage[] = messages
+        .filter(msg => msg.role !== 'narrator')
+        .map(msg => ({
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content
+        }));
+      
+      grokMessages.push({
+        role: 'user',
+        content: inputValue
+      });
+      
+      // Get response from Grok
+      const response = await getGrokResponse(grokMessages);
+      
       setIsAiThinking(false);
       setIsAiTyping(true);
       
@@ -124,37 +140,25 @@ const ChatInterface: React.FC = () => {
         const aiResponse: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: getAIResponse(inputValue),
+          content: response,
           timestamp: new Date(),
           type: 'ai'
         };
         setMessages(prev => [...prev, aiResponse]);
+        setIsAiTyping(false);
       }
-    }, 1500);
-  };
-
-  // Mock AI response generator
-  const getAIResponse = (userInput: string): string => {
-    const input = userInput.toLowerCase();
-    
-    if (input.includes('hello') || input.includes('hi')) {
-      return 'Hello there! How can I assist you today?';
-    } else if (input.includes('how are you')) {
-      return 'I\'m just a program, but I\'m functioning well! How can I help you?';
-    } else if (input.includes('name')) {
-      return 'I\'m an AI assistant created to help you with your questions and tasks.';
-    } else if (input.includes('thank')) {
-      return 'You\'re welcome! If you need anything else, just ask.';
-    } else if (input.includes('weather')) {
-      return 'I don\'t have access to real-time weather data, but I can recommend checking a weather app or website for the most accurate forecast.';
-    } else if (input.includes('joke')) {
-      return 'Why don\'t scientists trust atoms? Because they make up everything!';
-    } else {
-      return 'That\'s an interesting question. While I\'m just a simple demo at the moment, a more advanced AI could provide a detailed response to your query.';
+    } catch (error) {
+      console.error('Error getting Grok response:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to get response from AI. Please try again.',
+        variant: 'destructive',
+      });
+      setIsAiThinking(false);
     }
   };
 
-  // Mock narrator response generator
+  // Mock narrator response generator (kept for backward compatibility)
   const getNarratorResponse = (userInput: string): string => {
     const input = userInput.toLowerCase();
     
