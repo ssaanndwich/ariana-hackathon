@@ -8,18 +8,18 @@ const Index = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            ChahtGPT
+            Cooldown
           </h1>
           <p className="mt-2 text-muted-foreground">
-            The most advanced AI assistant on the market, you almost can't tell it's not a human.
+            A voice de-escalation game
           </p>
         </div>
         
-        <div className="flex gap-6">
-          <div className="w-2/5">
+        <div className="flex gap-4">
+          <div className="w-2/4">
             <ChatInterface />
           </div>
-          <div className="w-3/5">
+          <div className="w-3/4">
             <RightPanel />
           </div>
         </div>
