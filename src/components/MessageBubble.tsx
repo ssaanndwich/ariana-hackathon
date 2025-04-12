@@ -7,6 +7,12 @@ import { User, Bot, Sparkles, Settings } from 'lucide-react';
 export type MessageType = 'user' | 'ai';
 export type MessageRole = 'user' | 'assistant' | 'narrator';
 
+// Function to get a random assistant avatar
+const getRandomAssistantAvatar = () => {
+  const randomNum = Math.floor(Math.random() * 5) + 1;
+  return `/images/${randomNum}.png`;
+};
+
 interface MessageBubbleProps {
   type: MessageType;
   role: MessageRole;
@@ -72,8 +78,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   return (
     <div className={containerClass}>
       {role === 'assistant' && !isTyping && (
-        <Avatar className="mt-1 h-16 w-16">
-          <AvatarImage src="/ai-avatar.png" alt="AI" />
+        <Avatar className="mt-1 h-20 w-20">
+          <AvatarImage src={getRandomAssistantAvatar()} alt="AI" />
           <AvatarFallback className="bg-primary/10 text-primary">
             <Bot size={32} />
           </AvatarFallback>

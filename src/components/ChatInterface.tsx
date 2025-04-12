@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Mic, MicOff, Send } from 'lucide-react';
+import { Mic, MicOff, Send, Heart, MessageSquare, Smile, Zap } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import MessageBubble, { MessageType } from './MessageBubble';
 import ThinkingIndicator from './ThinkingIndicator';
@@ -45,6 +45,13 @@ const ChatInterface: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
   const [isAiTyping, setIsAiTyping] = useState(false);
   const [isAiThinking, setIsAiThinking] = useState(false);
+  const [sanityLevel, setSanityLevel] = useState(75);
+  const [responsePreviews, setResponsePreviews] = useState({
+    compliment: "You're doing an amazing job! Keep up the great work!",
+    distract: "Let's take a quick break and look at some cute cat pictures!",
+    joke: "Why don't scientists trust atoms? Because they make up everything!",
+    conversation: "I've been thinking about the future of AI. What are your thoughts on this topic?"
+  });
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -199,6 +206,35 @@ const ChatInterface: React.FC = () => {
     }
   };
 
+  const handleInteraction = (type: 'compliment' | 'distract' | 'joke' | 'conversation') => {
+    let change = 0;
+    switch (type) {
+      case 'compliment':
+        change = Math.floor(Math.random() * 10) - 5; // -5 to +5
+        break;
+      case 'distract':
+        change = Math.floor(Math.random() * 15) - 10; // -10 to +5
+        break;
+      case 'joke':
+        change = Math.floor(Math.random() * 20) - 10; // -10 to +10
+        break;
+      case 'conversation':
+        change = Math.floor(Math.random() * 30) - 15; // -15 to +15
+        break;
+    }
+    setSanityLevel(prev => Math.max(0, Math.min(100, prev + change)));
+    
+    // Add the interaction as a message
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      role: 'assistant',
+      content: responsePreviews[type],
+      timestamp: new Date(),
+      type: 'ai'
+    };
+    setMessages(prev => [...prev, newMessage]);
+  };
+
   return (
     <Card className="flex flex-col h-[calc(100vh-12rem)] overflow-hidden">
       <div className="flex-1 overflow-y-auto p-4 space-y-2" style={{ scrollbarWidth: 'thin' }}>
@@ -224,6 +260,52 @@ const ChatInterface: React.FC = () => {
       </div>
       
       <div className="p-4 border-t">
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          <Button 
+            variant="outline" 
+            className="flex flex-col items-start gap-2 p-4 h-auto text-left hover:bg-gray-100"
+            onClick={() => handleInteraction('compliment')}
+          >
+            <div className="flex items-center gap-2 w-full">
+              <Heart className="h-5 w-5" />
+              <span className="font-medium">Give Compliment</span>
+            </div>
+            <p className="text-sm text-muted-foreground pl-7 break-words whitespace-normal w-full">{responsePreviews.compliment}</p>
+          </Button>
+          <Button 
+            variant="outline" 
+            className="flex flex-col items-start gap-2 p-4 h-auto text-left hover:bg-gray-100"
+            onClick={() => handleInteraction('distract')}
+          >
+            <div className="flex items-center gap-2 w-full">
+              <Zap className="h-5 w-5" />
+              <span className="font-medium">Distract</span>
+            </div>
+            <p className="text-sm text-muted-foreground pl-7 break-words whitespace-normal w-full">{responsePreviews.distract}</p>
+          </Button>
+          <Button 
+            variant="outline" 
+            className="flex flex-col items-start gap-2 p-4 h-auto text-left hover:bg-gray-100"
+            onClick={() => handleInteraction('joke')}
+          >
+            <div className="flex items-center gap-2 w-full">
+              <Smile className="h-5 w-5" />
+              <span className="font-medium">Tell a Joke</span>
+            </div>
+            <p className="text-sm text-muted-foreground pl-7 break-words whitespace-normal w-full">{responsePreviews.joke}</p>
+          </Button>
+          <Button 
+            variant="outline" 
+            className="flex flex-col items-start gap-2 p-4 h-auto text-left hover:bg-gray-100"
+            onClick={() => handleInteraction('conversation')}
+          >
+            <div className="flex items-center gap-2 w-full">
+              <MessageSquare className="h-5 w-5" />
+              <span className="font-medium">Start Conversation</span>
+            </div>
+            <p className="text-sm text-muted-foreground pl-7 break-words whitespace-normal w-full">{responsePreviews.conversation}</p>
+          </Button>
+        </div>
         <div className="flex space-x-2">
           <Input
             ref={inputRef}

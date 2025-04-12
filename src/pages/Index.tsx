@@ -15,11 +15,11 @@ const Index = () => {
           </p>
         </div>
         
-        <div className="flex gap-6">
-          <div className="w-2/5">
+        <div className="flex gap-4">
+          <div className="w-2/4">
             <ChatInterface />
           </div>
-          <div className="w-3/5">
+          <div className="w-3/4">
             <RightPanel />
           </div>
         </div>
