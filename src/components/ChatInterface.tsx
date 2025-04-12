@@ -2,13 +2,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Mic, MicOff, Send } from 'lucide-react';
+import { Mic, MicOff, Send, Volume2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import MessageBubble, { MessageType } from './MessageBubble';
 import ThinkingIndicator from './ThinkingIndicator';
 import NarratorThinkingIndicator from './NarratorThinkingIndicator';
 import useSpeechRecognition from '@/hooks/useSpeechRecognition';
 import { getGrokResponse, GrokMessage } from '@/lib/grok';
+import { speakWithElevenLabs, playAudioQueue } from '@/lib/elevenlabs';
 
 interface Message {
   id: string;
@@ -45,6 +46,7 @@ const ChatInterface: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
   const [isAiTyping, setIsAiTyping] = useState(false);
   const [isAiThinking, setIsAiThinking] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -57,11 +59,19 @@ const ChatInterface: React.FC = () => {
     hasRecognitionSupport,
     error
   } = useSpeechRecognition();
-  
+
   // Update input value with speech transcript
   useEffect(() => {
     if (transcript) {
       setInputValue(transcript);
+      // Auto-send message when user stops speaking
+      const timeout = setTimeout(() => {
+        if (transcript.trim() !== '') {
+          handleSendMessage();
+        }
+      }, 1000); // Wait 1 second after speech ends
+      
+      return () => clearTimeout(timeout);
     }
   }, [transcript]);
   
@@ -146,6 +156,9 @@ const ChatInterface: React.FC = () => {
         };
         setMessages(prev => [...prev, aiResponse]);
         setIsAiTyping(false);
+        
+        // Speak the AI's response
+        speak(response);
       }
     } catch (error) {
       console.error('Error getting Grok response:', error);
@@ -199,6 +212,49 @@ const ChatInterface: React.FC = () => {
     }
   };
 
+  // Start listening when component mounts
+  useEffect(() => {
+    if (hasRecognitionSupport) {
+      startListening();
+    }
+  }, [hasRecognitionSupport, startListening]);
+
+  // Speak text using ElevenLabs
+  const speak = async (text: string) => {
+    try {
+      setIsSpeaking(true);
+      // Stop listening if active
+      if (isListening) {
+        stopListening();
+      }
+      
+      await speakWithElevenLabs(text, () => {
+        // Start listening for user response after AI finishes speaking
+        if (hasRecognitionSupport) {
+          startListening();
+        }
+      });
+      setIsSpeaking(false);
+    } catch (error) {
+      console.error('Error speaking with ElevenLabs:', error);
+      toast({
+        title: 'Voice Synthesis Error',
+        description: 'Failed to generate speech. Please try again.',
+        variant: 'destructive',
+      });
+      setIsSpeaking(false);
+      // Start listening again if there was an error
+      if (hasRecognitionSupport) {
+        startListening();
+      }
+    }
+  };
+
+  // Handle play audio button click
+  const handlePlayAudio = () => {
+    playAudioQueue();
+  };
+
   return (
     <Card className="flex flex-col h-[calc(100vh-12rem)] overflow-hidden">
       <div className="flex-1 overflow-y-auto p-4 space-y-2" style={{ scrollbarWidth: 'thin' }}>
@@ -230,22 +286,30 @@ const ChatInterface: React.FC = () => {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Type your message..."
+            placeholder={isListening ? "Listening..." : "Type your message..."}
             className="flex-1"
-            disabled={isAiThinking}
+            disabled={isAiThinking || isSpeaking}
           />
           <Button
             variant="outline"
             size="icon"
             onClick={handleMicToggle}
             className={isListening ? 'bg-primary text-white' : ''}
-            disabled={isAiThinking || !hasRecognitionSupport}
+            disabled={isAiThinking || isSpeaking || !hasRecognitionSupport}
           >
             {isListening ? <MicOff size={18} /> : <Mic size={18} />}
           </Button>
           <Button
+            variant="outline"
+            size="icon"
+            onClick={handlePlayAudio}
+            disabled={isAiThinking || isSpeaking}
+          >
+            <Volume2 size={18} />
+          </Button>
+          <Button
             onClick={handleSendMessage}
-            disabled={inputValue.trim() === '' || isAiThinking}
+            disabled={inputValue.trim() === '' || isAiThinking || isSpeaking}
           >
             <Send size={18} />
           </Button>
