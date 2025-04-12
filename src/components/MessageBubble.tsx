@@ -27,7 +27,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     'px-4 py-2 rounded-t-xl break-words', 
     type === 'user' 
       ? 'bg-primary text-white rounded-bl-xl ml-auto max-w-[90%]' 
-      : 'bg-secondary text-foreground rounded-br-xl mr-auto max-w-[75%] relative overflow-hidden'
+      : 'bg-secondary text-foreground rounded-br-xl mr-auto max-w-[90%] relative overflow-hidden'
   );
   
   const containerClass = cn(
@@ -54,10 +54,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       <div className="flex flex-col items-start">
         <div className={bubbleClass}>
           {type === 'ai' && (
-            <div className="absolute inset-0 bg-gradient-to-br from-secondary to-secondary/80 opacity-80 pointer-events-none"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-secondary to-secondary/80 opacity-50 pointer-events-none"></div>
           )}
           
-          <div className="relative">
+          <div className="relative z-10">
             {type === 'ai' && isTyping ? (
               <TypingAnimation 
                 text={content} 
