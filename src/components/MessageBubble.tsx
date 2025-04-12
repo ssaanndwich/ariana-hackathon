@@ -2,6 +2,8 @@
 import React from 'react';
 import TypingAnimation from './TypingAnimation';
 import { cn } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { User, Bot } from 'lucide-react';
 
 export type MessageType = 'user' | 'ai';
 
@@ -20,15 +22,16 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   onTypingComplete,
   timestamp = new Date(),
 }) => {
+  // Make user bubbles wider than AI bubbles
   const bubbleClass = cn(
-    'max-w-[80%] px-4 py-2 rounded-t-xl break-words', 
+    'px-4 py-2 rounded-t-xl break-words', 
     type === 'user' 
-      ? 'bg-primary text-white rounded-bl-xl ml-auto' 
-      : 'bg-secondary text-foreground rounded-br-xl mr-auto'
+      ? 'bg-primary text-white rounded-bl-xl ml-auto max-w-[90%]' 
+      : 'bg-secondary text-foreground rounded-br-xl mr-auto max-w-[75%]'
   );
   
   const containerClass = cn(
-    'flex w-full mb-4', 
+    'flex w-full mb-4 items-start gap-2', 
     type === 'user' ? 'justify-end' : 'justify-start'
   );
 
@@ -39,7 +42,16 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
   return (
     <div className={containerClass}>
-      <div className="flex flex-col items-start max-w-[80%]">
+      {type === 'ai' && (
+        <Avatar className="mt-1">
+          <AvatarImage src="/ai-avatar.png" alt="AI" />
+          <AvatarFallback className="bg-primary/10 text-primary">
+            <Bot size={18} />
+          </AvatarFallback>
+        </Avatar>
+      )}
+      
+      <div className="flex flex-col items-start">
         <div className={bubbleClass}>
           {type === 'ai' && isTyping ? (
             <TypingAnimation 
@@ -54,6 +66,15 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           {formattedTime}
         </span>
       </div>
+      
+      {type === 'user' && (
+        <Avatar className="mt-1">
+          <AvatarImage src="/user-avatar.png" alt="User" />
+          <AvatarFallback className="bg-accent/10 text-accent">
+            <User size={18} />
+          </AvatarFallback>
+        </Avatar>
+      )}
     </div>
   );
 };

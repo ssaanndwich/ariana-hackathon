@@ -1,6 +1,39 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
+// Define SpeechRecognition interface to fix TypeScript errors
+interface SpeechRecognitionEvent {
+  resultIndex: number;
+  results: {
+    [key: number]: {
+      [key: number]: {
+        transcript: string;
+      };
+    };
+  };
+}
+
+interface SpeechRecognitionErrorEvent {
+  error: string;
+}
+
+interface SpeechRecognitionInterface extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onerror: (event: SpeechRecognitionErrorEvent) => void;
+  start: () => void;
+  stop: () => void;
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition?: new () => SpeechRecognitionInterface;
+    webkitSpeechRecognition?: new () => SpeechRecognitionInterface;
+  }
+}
+
 interface SpeechRecognitionHook {
   transcript: string;
   isListening: boolean;
@@ -19,7 +52,7 @@ const useSpeechRecognition = (): SpeechRecognitionHook => {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const hasRecognitionSupport = !!SpeechRecognition;
   
-  let recognitionInstance: any = null;
+  let recognitionInstance: SpeechRecognitionInterface | null = null;
   
   // Initialize recognition
   useEffect(() => {
@@ -30,13 +63,13 @@ const useSpeechRecognition = (): SpeechRecognitionHook => {
     recognitionInstance.interimResults = true;
     recognitionInstance.lang = 'en-US';
     
-    recognitionInstance.onresult = (event: any) => {
+    recognitionInstance.onresult = (event: SpeechRecognitionEvent) => {
       const current = event.resultIndex;
       const transcriptText = event.results[current][0].transcript;
       setTranscript(transcriptText);
     };
     
-    recognitionInstance.onerror = (event: any) => {
+    recognitionInstance.onerror = (event: SpeechRecognitionErrorEvent) => {
       setError(`Speech recognition error: ${event.error}`);
       setIsListening(false);
     };
@@ -58,18 +91,19 @@ const useSpeechRecognition = (): SpeechRecognitionHook => {
         recognitionInstance.start();
       } else if (hasRecognitionSupport) {
         // Reinitialize if needed
-        recognitionInstance = new SpeechRecognition();
+        const RecognitionConstructor = SpeechRecognition as new () => SpeechRecognitionInterface;
+        recognitionInstance = new RecognitionConstructor();
         recognitionInstance.continuous = true;
         recognitionInstance.interimResults = true;
         recognitionInstance.lang = 'en-US';
         
-        recognitionInstance.onresult = (event: any) => {
+        recognitionInstance.onresult = (event: SpeechRecognitionEvent) => {
           const current = event.resultIndex;
           const transcriptText = event.results[current][0].transcript;
           setTranscript(transcriptText);
         };
         
-        recognitionInstance.onerror = (event: any) => {
+        recognitionInstance.onerror = (event: SpeechRecognitionErrorEvent) => {
           setError(`Speech recognition error: ${event.error}`);
           setIsListening(false);
         };
