@@ -2,12 +2,14 @@ import React from 'react';
 import TypingAnimation from './TypingAnimation';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Bot, Sparkles } from 'lucide-react';
+import { User, Bot, Sparkles, Settings } from 'lucide-react';
 
 export type MessageType = 'user' | 'ai';
+export type MessageRole = 'user' | 'assistant' | 'narrator';
 
 interface MessageBubbleProps {
   type: MessageType;
+  role: MessageRole;
   content: string;
   isTyping?: boolean;
   onTypingComplete?: () => void;
@@ -16,22 +18,31 @@ interface MessageBubbleProps {
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({
   type,
+  role,
   content,
   isTyping = false,
   onTypingComplete,
   timestamp = new Date(),
 }) => {
-  // Different styling for user and AI bubbles
+  // Different styling based on role
   const bubbleClass = cn(
     'px-4 py-2 rounded-t-xl break-words', 
-    type === 'user' 
+    role === 'user' 
       ? 'bg-primary text-white rounded-bl-xl ml-auto w-full max-w-[90%]' 
-      : 'bg-secondary text-foreground rounded-br-xl mr-auto w-full max-w-[90%] relative overflow-hidden'
+      : role === 'assistant'
+      ? 'bg-secondary text-foreground rounded-br-xl mr-auto w-full max-w-[90%] relative overflow-hidden'
+      : role === 'narrator'
+      ? 'text-muted-foreground w-full'
+      : 'bg-muted text-muted-foreground rounded-xl mx-auto w-full max-w-[90%] text-center'
   );
   
   const containerClass = cn(
     'flex w-full mb-4 items-start gap-2', 
-    type === 'user' ? 'justify-end' : 'justify-start'
+    role === 'user' 
+      ? 'justify-end' 
+      : role === 'assistant'
+      ? 'justify-start'
+      : 'justify-start'
   );
 
   const formattedTime = timestamp.toLocaleTimeString([], { 
@@ -39,9 +50,28 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     minute: '2-digit' 
   });
 
+  // For narrator messages, we don't want to show avatars or bubbles
+  if (role === 'narrator') {
+    return (
+      <div className={containerClass}>
+        <div className={bubbleClass}>
+          {isTyping ? (
+            <div className="flex justify-center gap-2">
+              <span className="thinking-dot"></span>
+              <span className="thinking-dot"></span>
+              <span className="thinking-dot"></span>
+            </div>
+          ) : (
+            <span>{content}</span>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={containerClass}>
-      {type === 'ai' && (
+      {role === 'assistant' && !isTyping && (
         <Avatar className="mt-1 h-16 w-16">
           <AvatarImage src="/ai-avatar.png" alt="AI" />
           <AvatarFallback className="bg-primary/10 text-primary">
@@ -52,12 +82,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       
       <div className="flex flex-col items-start">
         <div className={bubbleClass}>
-          {type === 'ai' && (
+          {role === 'assistant' && (
             <div className="absolute inset-0 bg-gradient-to-br from-secondary to-secondary/80 opacity-50 pointer-events-none"></div>
           )}
           
           <div className="relative z-10">
-            {type === 'ai' && isTyping ? (
+            {role === 'assistant' && isTyping ? (
               <TypingAnimation 
                 text={content} 
                 onComplete={onTypingComplete}
@@ -66,7 +96,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
               <span>{content}</span>
             )}
             
-            {type === 'ai' && (
+            {role === 'assistant' && (
               <span className="absolute -top-1 -right-1">
                 <Sparkles size={14} className="text-primary/70" />
               </span>
@@ -74,12 +104,14 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           </div>
         </div>
         
-        <span className={`text-xs text-muted-foreground mt-1 ${type === 'user' ? 'ml-auto' : 'mr-auto'}`}>
-          {formattedTime}
-        </span>
+        {(role === 'user' || role === 'assistant') && (
+          <span className={`text-xs text-muted-foreground mt-1 ${role === 'user' ? 'ml-auto' : 'mr-auto'}`}>
+            {formattedTime}
+          </span>
+        )}
       </div>
       
-      {type === 'user' && (
+      {role === 'user' && (
         <Avatar className="mt-1 h-16 w-16">
           <AvatarImage src="/user-avatar.png" alt="User" />
           <AvatarFallback className="bg-accent/10 text-accent">

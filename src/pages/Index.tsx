@@ -8,10 +8,10 @@ const Index = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            AI Conversational Assistant
+            ChahtGPT
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Chat with our AI using text or voice input
+            The most advanced AI assistant on the market, you almost can't tell it's not a human.
           </p>
         </div>
         
@@ -25,8 +25,7 @@ const Index = () => {
         </div>
         
         <footer className="mt-8 text-sm text-muted-foreground text-center">
-          <p>© 2025 AI Assistant Demo. Built with React and Tailwind CSS.</p>
-          <p className="mt-1">Send messages by typing or using your voice!</p>
+          <p>© 2025 Ariana dev</p>
         </footer>
       </div>
     </div>

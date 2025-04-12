@@ -7,11 +7,11 @@ interface SanityLevelProps {
 
 const SanityLevel: React.FC<SanityLevelProps> = ({ level }) => {
   const levels = [
-    { color: 'bg-green-500', label: 'Great', threshold: 20 },
-    { color: 'bg-yellow-500', label: 'Stable', threshold: 40 },
-    { color: 'bg-orange-500', label: 'Stressed', threshold: 60 },
-    { color: 'bg-red-500', label: 'Unstable', threshold: 80 },
-    { color: 'bg-red-700', label: 'Critical', threshold: 100 },
+    { color: 'bg-green-500', label: 'Critical', threshold: 20 },
+    { color: 'bg-yellow-500', label: 'Stressed', threshold: 40 },
+    { color: 'bg-orange-500', label: 'Unstable', threshold: 60 },
+    { color: 'bg-red-500', label: 'Stable', threshold: 80 },
+    { color: 'bg-red-700', label: 'Great', threshold: 100 },
   ];
 
   const currentLevel = levels.find(l => level <= l.threshold) || levels[levels.length - 1];

@@ -6,22 +6,39 @@ import { Mic, MicOff, Send } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import MessageBubble, { MessageType } from './MessageBubble';
 import ThinkingIndicator from './ThinkingIndicator';
+import NarratorThinkingIndicator from './NarratorThinkingIndicator';
 import useSpeechRecognition from '@/hooks/useSpeechRecognition';
 
 interface Message {
   id: string;
-  type: MessageType;
+  role: 'user' | 'assistant' | 'narrator';
   content: string;
   timestamp: Date;
+  type: MessageType;
 }
 
 const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      type: 'ai',
-      content: 'Hello! I\'m your AI assistant. How can I help you today?',
+      role: 'narrator',
+      content: 'The scene opens in a quiet coffee shop...',
       timestamp: new Date(),
+      type: 'ai'
+    },
+    {
+      id: '2',
+      role: 'user',
+      content: 'Hey, what station do I need to take to get to that party place?',
+      timestamp: new Date(),
+      type: 'ai'
+    },
+    {
+      id: '3',
+      role: 'assistant',
+      content: 'What are you doing?',
+      timestamp: new Date(),
+      type: 'ai'
     },
   ]);
   const [inputValue, setInputValue] = useState('');
@@ -72,11 +89,12 @@ const ChatInterface: React.FC = () => {
       stopListening();
     }
     
-    const userMessage = {
+    const userMessage: Message = {
       id: Date.now().toString(),
-      type: 'user' as MessageType,
+      role: 'user',
       content: inputValue,
       timestamp: new Date(),
+      type: 'user'
     };
     
     setMessages(prev => [...prev, userMessage]);
@@ -90,15 +108,28 @@ const ChatInterface: React.FC = () => {
       setIsAiThinking(false);
       setIsAiTyping(true);
       
-      // Add AI response
-      const aiResponse = {
-        id: (Date.now() + 1).toString(),
-        type: 'ai' as MessageType,
-        content: getAIResponse(inputValue),
-        timestamp: new Date(),
-      };
-      
-      setMessages(prev => [...prev, aiResponse]);
+      // Check if user wants to narrate
+      if (inputValue.toLowerCase().includes('narrate')) {
+        const narratorResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'narrator',
+          content: getNarratorResponse(inputValue),
+          timestamp: new Date(),
+          type: 'ai'
+        };
+        setMessages(prev => [...prev, narratorResponse]);
+        setIsAiTyping(false);
+      } else {
+        // Add AI response
+        const aiResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: getAIResponse(inputValue),
+          timestamp: new Date(),
+          type: 'ai'
+        };
+        setMessages(prev => [...prev, aiResponse]);
+      }
     }, 1500);
   };
 
@@ -120,6 +151,23 @@ const ChatInterface: React.FC = () => {
       return 'Why don\'t scientists trust atoms? Because they make up everything!';
     } else {
       return 'That\'s an interesting question. While I\'m just a simple demo at the moment, a more advanced AI could provide a detailed response to your query.';
+    }
+  };
+
+  // Mock narrator response generator
+  const getNarratorResponse = (userInput: string): string => {
+    const input = userInput.toLowerCase();
+    
+    if (input.includes('forest')) {
+      return 'The trees rustle in the wind as a mysterious figure emerges from the shadows...';
+    } else if (input.includes('city')) {
+      return 'The neon lights of the city flicker as rain begins to fall on the empty streets...';
+    } else if (input.includes('beach')) {
+      return 'Waves crash against the shore as the sun begins to set over the horizon...';
+    } else if (input.includes('space')) {
+      return 'Stars twinkle in the vast emptiness of space as a lone spaceship drifts by...';
+    } else {
+      return 'The scene shifts to a new location, filled with possibilities...';
     }
   };
   
@@ -154,17 +202,20 @@ const ChatInterface: React.FC = () => {
           <MessageBubble
             key={message.id}
             type={message.type}
+            role={message.role}
             content={message.content}
-            isTyping={message.type === 'ai' && isAiTyping && message.id === messages[messages.length - 1].id}
+            isTyping={message.type === 'ai' && isAiTyping && message.id === messages[messages.length - 1].id && message.role !== 'narrator'}
             onTypingComplete={() => setIsAiTyping(false)}
             timestamp={message.timestamp}
           />
         ))}
-        {isAiThinking && (
+        {isAiThinking && messages[messages.length - 1]?.role === 'narrator' ? (
+          <NarratorThinkingIndicator />
+        ) : isAiThinking ? (
           <div className="self-start">
             <ThinkingIndicator />
           </div>
-        )}
+        ) : null}
         <div ref={messagesEndRef} />
       </div>
       
