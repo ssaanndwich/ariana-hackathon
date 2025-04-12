@@ -13,10 +13,13 @@ const ThinkingIndicator: React.FC = () => {
         </AvatarFallback>
       </Avatar>
       
-      <div className="flex items-center py-2 px-3 bg-secondary rounded-t-xl rounded-br-xl max-w-[75%]">
-        <span className="thinking-dot"></span>
-        <span className="thinking-dot"></span>
-        <span className="thinking-dot"></span>
+      <div className="flex items-center py-2 px-3 bg-secondary rounded-t-xl rounded-br-xl max-w-[75%] relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-secondary/80 to-secondary opacity-50"></div>
+        <div className="relative z-10 flex">
+          <span className="thinking-dot"></span>
+          <span className="thinking-dot"></span>
+          <span className="thinking-dot"></span>
+        </div>
       </div>
     </div>
   );
