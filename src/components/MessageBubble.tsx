@@ -1,4 +1,3 @@
-
 import React from 'react';
 import TypingAnimation from './TypingAnimation';
 import { cn } from '@/lib/utils';
@@ -26,8 +25,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   const bubbleClass = cn(
     'px-4 py-2 rounded-t-xl break-words', 
     type === 'user' 
-      ? 'bg-primary text-white rounded-bl-xl ml-auto max-w-[90%]' 
-      : 'bg-secondary text-foreground rounded-br-xl mr-auto max-w-[90%] relative overflow-hidden'
+      ? 'bg-primary text-white rounded-bl-xl ml-auto w-full max-w-[90%]' 
+      : 'bg-secondary text-foreground rounded-br-xl mr-auto w-full max-w-[90%] relative overflow-hidden'
   );
   
   const containerClass = cn(
@@ -43,10 +42,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   return (
     <div className={containerClass}>
       {type === 'ai' && (
-        <Avatar className="mt-1">
+        <Avatar className="mt-1 h-16 w-16">
           <AvatarImage src="/ai-avatar.png" alt="AI" />
           <AvatarFallback className="bg-primary/10 text-primary">
-            <Bot size={18} />
+            <Bot size={32} />
           </AvatarFallback>
         </Avatar>
       )}
@@ -81,10 +80,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       </div>
       
       {type === 'user' && (
-        <Avatar className="mt-1">
+        <Avatar className="mt-1 h-16 w-16">
           <AvatarImage src="/user-avatar.png" alt="User" />
           <AvatarFallback className="bg-accent/10 text-accent">
-            <User size={18} />
+            <User size={32} />
           </AvatarFallback>
         </Avatar>
       )}

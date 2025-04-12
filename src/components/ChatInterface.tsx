@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -149,7 +148,7 @@ const ChatInterface: React.FC = () => {
   };
 
   return (
-    <Card className="flex flex-col h-full max-h-[80vh] overflow-hidden">
+    <Card className="flex flex-col h-[calc(100vh-12rem)] overflow-hidden">
       <div className="flex-1 overflow-y-auto p-4 space-y-2" style={{ scrollbarWidth: 'thin' }}>
         {messages.map((message) => (
           <MessageBubble
