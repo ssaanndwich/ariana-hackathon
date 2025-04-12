@@ -11,7 +11,7 @@ const Index = () => {
             Cooldown
           </h1>
           <p className="mt-2 text-muted-foreground">
-            The voice de-escalation game you never wanted
+            A voice de-escalation game
           </p>
         </div>
         
