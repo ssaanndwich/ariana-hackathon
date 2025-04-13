@@ -142,61 +142,50 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ sanityLevel: initialSanit
       
       // Get response from Grok
       const response = await getGrokResponse(grokMessages);
+      console.log('response1', response);
       
       setIsAiThinking(false);
       setIsAiTyping(true);
       
       // Check if user wants to narrate
-      if (inputValue.toLowerCase().includes('narrate')) {
-        const narratorResponse: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'narrator',
-          content: getNarratorResponse(inputValue),
-          timestamp: new Date(),
-          type: 'ai'
-        };
-        setMessages(prev => [...prev, narratorResponse]);
-        setIsAiTyping(false);
-      } else {
-        // Update sanity level based on response
-        const botLevel = response.level;
-        let newSanityLevel;
-        switch (botLevel) {
-          case 1:
-            newSanityLevel = 0; // Critical
-            break;
-          case 2:
-            newSanityLevel = 25; // Unstable
-            break;
-          case 3:
-            newSanityLevel = 50; // Stressed
-            break;
-          case 4:
-            newSanityLevel = 75; // Stable
-            break;
-          case 5:
-            newSanityLevel = 100; // Great
-            break;
-          default:
-            newSanityLevel = 75; // Default
-        }
-        setSanityLevel(newSanityLevel);
-        console.log('newSanityLevel', newSanityLevel);
-        
-        // Add AI response
-        const aiResponse: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: response.message,
-          timestamp: new Date(),
-          type: 'ai'
-        };
-        setMessages(prev => [...prev, aiResponse]);
-        setIsAiTyping(false);
-        
-        // Speak the AI's response
-        speak(response.message);
+      // Update sanity level based on response
+      const botLevel = response.level;
+      let newSanityLevel;
+      switch (botLevel) {
+        case 1:
+          newSanityLevel = 0; // Critical
+          break;
+        case 2:
+          newSanityLevel = 25; // Unstable
+          break;
+        case 3:
+          newSanityLevel = 50; // Stressed
+          break;
+        case 4:
+          newSanityLevel = 75; // Stable
+          break;
+        case 5:
+          newSanityLevel = 100; // Great
+          break;
+        default:
+          newSanityLevel = 75; // Default
       }
+      setSanityLevel(newSanityLevel);
+      console.log('newSanityLevel', newSanityLevel);
+      
+      // Add AI response
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: response.message,
+        timestamp: new Date(),
+        type: 'ai'
+      };
+      setMessages(prev => [...prev, aiResponse]);
+      setIsAiTyping(false);
+      
+      // Speak the AI's response
+      speak(response.message);
     } catch (error) {
       console.error('Error getting Grok response:', error);
       toast({
@@ -266,6 +255,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ sanityLevel: initialSanit
         stopListening();
       }
       
+      console.log('speaking text', text);
       await speakWithElevenLabs(text, () => {
         // Start listening for user response after AI finishes speaking
         if (hasRecognitionSupport) {
@@ -391,6 +381,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ sanityLevel: initialSanit
       
       // Get response from Grok
       const response = await getGrokResponse(grokMessages);
+      console.log('response', response);
       
       setIsAiThinking(false);
       setIsAiTyping(true);
