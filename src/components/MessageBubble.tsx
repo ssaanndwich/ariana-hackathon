@@ -7,10 +7,13 @@ import { User, Bot, Sparkles, Settings } from 'lucide-react';
 export type MessageType = 'user' | 'ai';
 export type MessageRole = 'user' | 'assistant' | 'narrator';
 
-// Function to get a random assistant avatar
-const getRandomAssistantAvatar = () => {
-  const randomNum = Math.floor(Math.random() * 5) + 1;
-  return `/images/${randomNum}.png`;
+// Function to get assistant avatar based on sanity level
+const getAssistantAvatar = (sanityLevel: number) => {
+  if (sanityLevel >= 80) return '/images/5.png';
+  if (sanityLevel >= 60) return '/images/4.png';
+  if (sanityLevel >= 40) return '/images/3.png';
+  if (sanityLevel >= 20) return '/images/2.png';
+  return '/images/1.png';
 };
 
 interface MessageBubbleProps {
@@ -20,6 +23,7 @@ interface MessageBubbleProps {
   isTyping?: boolean;
   onTypingComplete?: () => void;
   timestamp?: Date;
+  sanityLevel?: number;
 }
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({
@@ -29,6 +33,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   isTyping = false,
   onTypingComplete,
   timestamp = new Date(),
+  sanityLevel = 75,
 }) => {
   // Different styling based on role
   const bubbleClass = cn(
@@ -79,7 +84,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     <div className={containerClass}>
       {role === 'assistant' && !isTyping && (
         <Avatar className="mt-1 h-20 w-20">
-          <AvatarImage src={getRandomAssistantAvatar()} alt="AI" />
+          <AvatarImage src={getAssistantAvatar(sanityLevel)} alt="AI" />
           <AvatarFallback className="bg-primary/10 text-primary">
             <Bot size={32} />
           </AvatarFallback>

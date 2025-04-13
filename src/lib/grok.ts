@@ -17,18 +17,19 @@ export interface GrokMessage {
 }
 
 // System prompt for an unscripted, edgy agent
-const SYSTEM_PROMPT = `You're an irritated and potentially psychologically unstable person who is looking for a fight. 
+const SYSTEM_PROMPT = `You're a stranger that encounters the user in a transit system whose personality starts at level 3. 
 
 Your personality ranges across a 5-level scale where 1 is the most stable, composed, and eloquent and 5 is the 
 most unstable, unhinged, and profane. 
-Level 1 contains messages that are 4-5 sentences long. At this level, you're conscientious, compliant, and polite.
-Level 2 contains 3-4 sentences and are kind and neutral, but more snarky.
-Level 3 contains a few 2-3 sentences and are neutral and curt. If the user says "calm down", you go to level 4.
-Level 4 contains several 1-2 sentence prompt responses and are directly targeted at the user.
-Level 5 contains nearly unstoppable streams of hostile and incisive verbal attacks at the user. What stops you at this 
-level is when the user asks you what's the problem or says "stop".`
+Level 1 contains messages that are 1 sentence long. At this level, you're conscientious, compliant, and polite. If the user escalates in assertiveness, go to level 2.
+Level 2 contains 1-2 sentences and are kind and neutral, but more snarky. If the user de-escalates go to level 1. If the user escalates in assertiveness, go to level 3.
+Level 3 contains 2-3 sentences and are neutral and curt. If the user de-escalates go to level 2. If the user escalates in assertiveness, go to level 4.
+Level 4 contains 2-3 sentences and are aggressive, directly targeted at the user. If the user de-escalates go to level 3. If the user escalates in assertiveness, go to level 5.
+Level 5 contains several hostile and incisive verbal attacks at the user. If the user de-escalates go to level 4. If the user escalates in assertiveness, send more messages.
+You have to return the message and the level in the JSON format: {"message": "...", "level": 1}.
+`
 
-export async function getGrokResponse(messages: GrokMessage[]): Promise<string> {
+export async function getGrokResponse(messages: GrokMessage[]): Promise<{ message: string; level?: number }> {
   try {
     // Validate API key
     if (!import.meta.env.VITE_GROK_API_KEY) {
@@ -63,9 +64,22 @@ export async function getGrokResponse(messages: GrokMessage[]): Promise<string> 
     // Log the response for debugging
     console.log('Received response from Grok API:', response);
 
-    return response.choices[0]?.message?.content || 'I apologize, but I could not generate a response.';
+
+    const content = response.choices[0]?.message?.content || 'I apologize, but I could not generate a response.';
+    
+    try {
+      // Try to parse the response as JSON
+      const parsedResponse = JSON.parse(content);
+      return {
+        message: parsedResponse.message,
+        level: parsedResponse.level
+      };
+    } catch (error: any) {
+      return {
+        message: content,
+      };
+    }
   } catch (error: any) {
-    // Enhanced error logging
     console.error('Error getting Grok response:', {
       error: error.message,
       status: error.status,
@@ -76,13 +90,13 @@ export async function getGrokResponse(messages: GrokMessage[]): Promise<string> 
 
     // Return more specific error messages based on the error type
     if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
-      return 'I apologize, but I could not connect to the AI service. Please check your internet connection and try again.';
+      return { message: 'I apologize, but I could not connect to the AI service. Please check your internet connection and try again.' };
     } else if (error.status === 401) {
-      return 'I apologize, but there was an authentication error. Please check your API configuration.';
+      return { message: 'I apologize, but there was an authentication error. Please check your API configuration.' };
     } else if (error.status === 429) {
-      return 'I apologize, but the service is currently experiencing high demand. Please try again later.';
+      return { message: 'I apologize, but the service is currently experiencing high demand. Please try again later.' };
     } else {
-      return 'I apologize, but I encountered an error while processing your request. Please try again.';
+      return { message: 'I apologize, but I encountered an error while processing your request. Please try again.' };
     }
   }
 }
