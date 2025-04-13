@@ -21,7 +21,12 @@ interface Message {
   type: MessageType;
 }
 
-const ChatInterface: React.FC = () => {
+interface ChatInterfaceProps {
+  sanityLevel: number;
+  onSanityLevelChange: (level: number) => void;
+}
+
+const ChatInterface: React.FC<ChatInterfaceProps> = ({ sanityLevel, onSanityLevelChange }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -51,7 +56,6 @@ const ChatInterface: React.FC = () => {
 
   const [isSpeaking, setIsSpeaking] = useState(false);
 
-  const [sanityLevel, setSanityLevel] = useState(75);
   const [responsePreviews, setResponsePreviews] = useState({
     compliment: "You're doing an amazing job! Keep up the great work!",
     distract: "Let's take a quick break and look at some cute cat pictures!",
@@ -76,14 +80,14 @@ const ChatInterface: React.FC = () => {
   useEffect(() => {
     if (transcript) {
       setInputValue(transcript);
-      // Auto-send message when user stops speaking
-      const timeout = setTimeout(() => {
-        if (transcript.trim() !== '') {
-          handleSendMessage();
-        }
-      }, 1000); // Wait 1 second after speech ends
-      
-      return () => clearTimeout(timeout);
+    // Auto-send message when user stops speaking
+       const timeout = setTimeout(() => {
+         if (transcript.trim() !== '') {
+           handleSendMessage();
+         }
+       }, 1000); // Wait 1 second after speech ends
+ 
+       return () => clearTimeout(timeout);
     }
   }, [transcript]);
   
@@ -97,11 +101,6 @@ const ChatInterface: React.FC = () => {
       });
     }
   }, [error, toast]);
-  
-  // Scroll to bottom when messages update
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isAiThinking]);
   
   // Handle sending a message
   const handleSendMessage = async () => {
@@ -158,6 +157,36 @@ const ChatInterface: React.FC = () => {
         setMessages(prev => [...prev, narratorResponse]);
         setIsAiTyping(false);
       } else {
+        // Parse sanity level from response
+        const levelMatch = response.match(/level:?\s*(\d+)/i);
+        if (levelMatch) {
+          const botLevel = parseInt(levelMatch[1], 10);
+          if (!isNaN(botLevel) && botLevel >= 1 && botLevel <= 5) {
+            // Map bot level (1-5) to sanity level (0-100)
+            let newSanityLevel;
+            switch (botLevel) {
+              case 1:
+                newSanityLevel = 0; // Critical
+                break;
+              case 2:
+                newSanityLevel = 25; // Unstable
+                break;
+              case 3:
+                newSanityLevel = 50; // Stressed
+                break;
+              case 4:
+                newSanityLevel = 75; // Stable
+                break;
+              case 5:
+                newSanityLevel = 100; // Great
+                break;
+              default:
+                newSanityLevel = 75; // Default
+            }
+            onSanityLevelChange(newSanityLevel);
+          }
+        }
+        
         // Add AI response
         const aiResponse: Message = {
           id: (Date.now() + 1).toString(),
@@ -241,7 +270,10 @@ const ChatInterface: React.FC = () => {
         stopListening();
       }
       
-      await speakWithElevenLabs(text, () => {
+      // Remove text between ** markers for speech
+      const textForSpeech = text.replace(/\*\*(.*?)\*\*/g, '');
+      
+      await speakWithElevenLabs(textForSpeech, () => {
         // Start listening for user response after AI finishes speaking
         if (hasRecognitionSupport) {
           startListening();
@@ -327,7 +359,6 @@ const ChatInterface: React.FC = () => {
         change = Math.floor(Math.random() * 30) - 15; // -15 to +15
         break;
     }
-    setSanityLevel(prev => Math.max(0, Math.min(100, prev + change)));
     
     // Generate a new message based on the type
     const userMessage = generateMessage(type);
@@ -382,6 +413,9 @@ const ChatInterface: React.FC = () => {
       setMessages(prev => [...prev, aiResponse]);
       setIsAiTyping(false);
       
+      // Update sanity level after getting the response
+      onSanityLevelChange(Math.max(0, Math.min(100, sanityLevel)));
+      
       // Speak the AI's response
       speak(response);
     } catch (error) {
@@ -396,7 +430,7 @@ const ChatInterface: React.FC = () => {
   };
 
   return (
-    <Card className="flex flex-col h-[calc(100vh-12rem)] overflow-hidden">
+    <Card className="flex flex-col h-[calc(140vh-4rem)] overflow-hidden">
       <div className="flex-1 overflow-y-auto p-4 space-y-2" style={{ scrollbarWidth: 'thin' }}>
         {messages.map((message) => (
           <MessageBubble

@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ChatInterface from '@/components/ChatInterface';
 import RightPanel from '@/components/RightPanel';
 
 const Index = () => {
+  const [sanityLevel, setSanityLevel] = useState(75);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
       <div className="container mx-auto px-4 py-8">
@@ -17,10 +19,10 @@ const Index = () => {
         
         <div className="flex gap-4">
           <div className="w-2/4">
-            <ChatInterface />
+            <ChatInterface sanityLevel={sanityLevel} onSanityLevelChange={setSanityLevel} />
           </div>
           <div className="w-3/4">
-            <RightPanel />
+            <RightPanel sanityLevel={sanityLevel} onSanityLevelChange={setSanityLevel} />
           </div>
         </div>
         
