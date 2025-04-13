@@ -266,8 +266,52 @@ const ChatInterface: React.FC = () => {
   // Handle play audio button click
   const handlePlayAudio = () => {
     playAudioQueue();
+  };
 
-  const handleInteraction = (type: 'compliment' | 'distract' | 'joke' | 'conversation') => {
+  const generateMessage = (type: 'compliment' | 'distract' | 'joke' | 'conversation'): string => {
+    const compliments = [
+      "You're doing an amazing job! Your dedication and hard work really show.",
+      "I'm impressed by your skills and creativity. You're truly exceptional!",
+      "Your positive attitude is contagious! Keep spreading that energy.",
+      "You have a unique way of looking at things that's really valuable.",
+      "Your progress is remarkable! You should be proud of yourself."
+    ];
+
+    const distractions = [
+      "Let's take a quick break and look at some cute cat pictures! They always make me smile.",
+      "Have you seen the latest viral dance challenge? It's absolutely hilarious!",
+      "I just discovered this amazing new song. Want to listen to it together?",
+      "Did you know that honey never spoils? Archaeologists have found pots of honey in ancient Egyptian tombs that are over 3,000 years old and still perfectly edible!",
+      "Let's play a quick game of rock-paper-scissors! I promise I won't cheat... much."
+    ];
+
+    const jokes = [
+      "Why don't scientists trust atoms? Because they make up everything!",
+      "What do you call a fake noodle? An impasta!",
+      "Why did the scarecrow win an award? Because he was outstanding in his field!",
+      "What do you call a fish with no eyes? Fsh!",
+      "Why did the math book look sad? Because it had too many problems!"
+    ];
+
+    const conversationStarters = [
+      "I've been thinking about the future of AI. What are your thoughts on how it will shape our lives?",
+      "If you could have dinner with any historical figure, who would it be and why?",
+      "What's the most interesting thing you've learned recently?",
+      "If you could instantly master any skill, what would it be?",
+      "What's your favorite way to unwind after a long day?"
+    ];
+
+    const messages = {
+      compliment: compliments[Math.floor(Math.random() * compliments.length)],
+      distract: distractions[Math.floor(Math.random() * distractions.length)],
+      joke: jokes[Math.floor(Math.random() * jokes.length)],
+      conversation: conversationStarters[Math.floor(Math.random() * conversationStarters.length)]
+    };
+
+    return messages[type];
+  };
+
+  const handleInteraction = async (type: 'compliment' | 'distract' | 'joke' | 'conversation') => {
     let change = 0;
     switch (type) {
       case 'compliment':
@@ -285,16 +329,70 @@ const ChatInterface: React.FC = () => {
     }
     setSanityLevel(prev => Math.max(0, Math.min(100, prev + change)));
     
-    // Add the interaction as a message
-    const newMessage: Message = {
+    // Generate a new message based on the type
+    const userMessage = generateMessage(type);
+    
+    // Update the preview for the next time
+    setResponsePreviews(prev => ({
+      ...prev,
+      [type]: userMessage
+    }));
+    
+    // Add the user message to chat
+    const userMessageObj: Message = {
       id: Date.now().toString(),
-      role: 'assistant',
-      content: responsePreviews[type],
+      role: 'user',
+      content: userMessage,
       timestamp: new Date(),
-      type: 'ai'
+      type: 'user'
     };
-    setMessages(prev => [...prev, newMessage]);
+    setMessages(prev => [...prev, userMessageObj]);
 
+    // Simulate AI thinking
+    setIsAiThinking(true);
+    
+    try {
+      // Prepare messages for Grok
+      const grokMessages: GrokMessage[] = messages
+        .filter(msg => msg.role !== 'narrator')
+        .map(msg => ({
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content
+        }));
+      
+      grokMessages.push({
+        role: 'user',
+        content: userMessage
+      });
+      
+      // Get response from Grok
+      const response = await getGrokResponse(grokMessages);
+      
+      setIsAiThinking(false);
+      setIsAiTyping(true);
+      
+      // Add AI response
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: response,
+        timestamp: new Date(),
+        type: 'ai'
+      };
+      setMessages(prev => [...prev, aiResponse]);
+      setIsAiTyping(false);
+      
+      // Speak the AI's response
+      speak(response);
+    } catch (error) {
+      console.error('Error getting Grok response:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to get response from AI. Please try again.',
+        variant: 'destructive',
+      });
+      setIsAiThinking(false);
+    }
   };
 
   return (

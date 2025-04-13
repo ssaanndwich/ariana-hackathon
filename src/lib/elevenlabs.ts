@@ -1,5 +1,5 @@
 const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY;
-const VOICE_ID = '21m00Tcm4TlvDq8ikWAM'; // Default voice ID (Rachel)
+const VOICE_ID = 'IKne3meq5aSn9XLyUdCD'; // Default voice ID (Rachel)
 
 let audioQueue: { url: string; onEnd?: () => void }[] = [];
 let isPlaying = false;
@@ -58,8 +58,8 @@ async function playNextAudio() {
   }
 
   isPlaying = true;
-  const { url: audioUrl, onEnd } = audioQueue.shift()!;
-  const audio = new Audio(audioUrl);
+  const { url, onEnd } = audioQueue.shift()!;
+  const audio = new Audio(url);
 
   try {
     await audio.play();
@@ -67,7 +67,7 @@ async function playNextAudio() {
     if (error instanceof Error && error.name === 'NotAllowedError') {
       // If autoplay is blocked, wait for user interaction
       console.log('Audio playback blocked. Waiting for user interaction...');
-      audioQueue.unshift({ url: audioUrl, onEnd }); // Put the audio back in the queue
+      audioQueue.unshift({ url, onEnd }); // Put the audio back in the queue
       isPlaying = false;
       return;
     }
@@ -76,10 +76,8 @@ async function playNextAudio() {
 
   // Clean up and play next audio when current one ends
   audio.onended = () => {
-    URL.revokeObjectURL(audioUrl);
-    if (onEnd) {
-      onEnd();
-    }
+    URL.revokeObjectURL(url);
+    onEnd?.();
     playNextAudio();
   };
 }
