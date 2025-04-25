@@ -1,24 +1,14 @@
-# Welcome to your Lovable project
-
+# Cooldown
+![Cooldown Cover Image](https://github.com/ssaanndwich/ariana-hackathon/blob/main/public/images/cooldown_cover.png?raw=true)
 ## Project info
 
-**URL**: https://lovable.dev/projects/f983fcf2-a347-435e-b8f5-0ee0c376a84d
-
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/f983fcf2-a347-435e-b8f5-0ee0c376a84d) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
+[Link](https://lovable.dev/projects/f983fcf2-a347-435e-b8f5-0ee0c376a84d)
 
 **Use your preferred IDE**
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Requirements
+• Node.js & npm installed
+[Install with NVM](https://github.com/nvm-sh/nvm#installing-and-updating)
 
 Follow these steps:
 
