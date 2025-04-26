@@ -1,5 +1,5 @@
 # Cooldown
-![Cooldown Cover Image](https://github.com/ssaanndwich/ariana-hackathon/blob/main/public/images/cooldown_cover.png?raw=true)
+
 ## Project info
 
 [Link](https://lovable.dev/projects/f983fcf2-a347-435e-b8f5-0ee0c376a84d)
