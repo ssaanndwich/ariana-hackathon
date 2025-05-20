@@ -1,5 +1,5 @@
 const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY;
-const VOICE_ID = 'IKne3meq5aSn9XLyUdCD'; // Default voice ID (Armin)
+const VOICE_ID = 'IKne3meq5aSn9XLyUdCD'; // Default voice ID (noname)
 
 let audioQueue: { url: string; onEnd?: () => void }[] = [];
 let isPlaying = false;
